@@ -11,35 +11,32 @@ export default function NewsLetter() {
     setStatus("Enviando...");
 
     if (!email) {
-      setStatus("Por favor, insira uma mensagem de erro válido.");
+      setStatus("Por favor, insira um e-mail válido.");
       return;
     }
 
     try {
-      const res = await fetch("https://api.brevo.com/v3/contacts", {
+      const res = await fetch("/api/subscribe", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": process.env.NEXT_PUBLIC_BREVO_API_KEY,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: email,
-
-          listIds: [5],
-          updateEnabled: true,
+          email,
+          // name: "", jobTitle: "" // quando quiser enviar
+          doi: true, // envia o e-mail de double opt-in
         }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        setStatus("Inscrição realizada com sucesso!");
+        setStatus(data.message || "Inscrição recebida. Verifique seu e-mail.");
         setEmail("");
       } else {
-        const error = await res.json();
-        setStatus(`Erro: ${error.message}`);
+        setStatus(data.message || "Erro ao inscrever-se.");
       }
     } catch (err) {
-      setStatus("Erro ao enviar. Tente novamente.");
       console.error(err);
+      setStatus("Erro ao enviar. Tente novamente.");
     }
   };
 
